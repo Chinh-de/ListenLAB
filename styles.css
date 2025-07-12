@@ -149,9 +149,21 @@
     
     .sidebar {
         width: 100% !important;
-        max-height: 40vh;
+        max-height: 50vh;
+        min-height: 300px;
         border-right: none;
         border-bottom: 1px solid #e5e7eb;
+    }
+    
+    /* Reduce logo size in mobile vertical mode */
+    .sidebar .w-36 {
+        width: 4rem !important;
+        height: 4rem !important;
+    }
+    
+    /* Ensure folder tree gets enough space */
+    .sidebar .flex-1 {
+        min-height: 180px;
     }
     
     .player-container {
@@ -220,14 +232,59 @@
     
     .sidebar {
         width: 100% !important;
-        max-height: 35vh;
+        max-height: 45vh;
+        min-height: 350px;
         border-right: none;
         border-bottom: 1px solid #e5e7eb;
+    }
+    
+    /* Reduce logo size in tablet vertical mode */
+    .sidebar .w-36 {
+        width: 5rem !important;
+        height: 5rem !important;
+    }
+    
+    /* Ensure folder tree gets enough space */
+    .sidebar .flex-1 {
+        min-height: 220px;
     }
     
     /* Hide copyright section in tablet vertical mode */
     .copyright-section {
         display: none;
+    }
+}
+
+/* Folder tree container improvements */
+#folderTree {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 150px;
+}
+
+/* Better folder tree spacing in vertical modes */
+@media (max-width: 1024px) {
+    #folderTree {
+        min-height: 200px;
+    }
+    
+    /* Improve scrollbar for vertical layouts */
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
     }
 }
 
