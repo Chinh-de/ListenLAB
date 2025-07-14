@@ -49,8 +49,8 @@
             </div>
         </div>
 
-        <!-- Copyright - Only visible in desktop mode -->
-        <div class="copyright-section p-4 border-t border-gray-200 mt-auto">
+        <!-- Copyright - Luôn hiển thị, vị trí thay đổi theo chế độ -->
+        <div class="copyright-section p-4 border-t border-gray-200" id="copyrightSection">
             <div class="text-center">
                 <p class="text-xs text-gray-500 mb-2">Developed by chinhde</p>
                 <div class="flex justify-center space-x-4">
@@ -69,7 +69,7 @@
     </div>
 
     <!-- Main Player -->
-    <div class="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col player-container">
+    <div class="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col player-container relative">
         <!-- Player Container -->
         <div class="flex-1 flex items-center justify-center p-8">
             <div class="bg-white rounded-3xl shadow-2xl p-8 w-full player-card">
@@ -92,7 +92,7 @@
                 </div>
 
                 <!-- Time Skip Controls -->
-                <div class="flex justify-center space-x-2 mb-6">
+                <div id="timeSkipContainer" class="flex justify-center space-x-2 mb-6">
                     <button class="time-skip-btn p-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200" data-skip="-10">-10s</button>
                     <button class="time-skip-btn p-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200" data-skip="-5">-5s</button>
                     <button class="time-skip-btn p-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200" data-skip="-3">-3s</button>
@@ -232,5 +232,87 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+    // Di chuyển copyright ra ngoài sidebar, luôn hiển thị cuối trang khi ở chế độ dọc
+    function handleCopyrightPosition() {
+        const copyright = document.getElementById('copyrightSection');
+        const sidebar = document.querySelector('.sidebar');
+        if (window.innerWidth < 768) {
+            // Chế độ dọc (mobile/tablet): chỉ chuyển xuống cuối body, không ghim
+            copyright.style.position = '';
+            copyright.style.left = '';
+            copyright.style.right = '';
+            copyright.style.bottom = '';
+            copyright.style.width = '100%';
+            copyright.style.zIndex = '';
+            copyright.style.display = 'block';
+            copyright.classList.add('bg-white', 'border-t', 'border-gray-200');
+            if (sidebar.contains(copyright)) {
+                sidebar.removeChild(copyright);
+                document.body.appendChild(copyright);
+            } else if (!document.body.contains(copyright)) {
+                document.body.appendChild(copyright);
+            }
+        } else {
+            // Chế độ ngang (desktop)
+            copyright.style.position = '';
+            copyright.style.left = '';
+            copyright.style.right = '';
+            copyright.style.bottom = '';
+            copyright.style.width = '';
+            copyright.style.zIndex = '';
+            copyright.style.display = '';
+            copyright.classList.remove('bg-white');
+            if (!sidebar.contains(copyright)) {
+                if (document.body.contains(copyright)) {
+                    document.body.removeChild(copyright);
+                }
+                sidebar.appendChild(copyright);
+            }
+        }
+    }
+    window.addEventListener('resize', handleCopyrightPosition);
+    window.addEventListener('DOMContentLoaded', handleCopyrightPosition);
+
+    // Chuyển các nút skip thành 2 hàng đối lập khi ở chế độ dọc
+    function handleTimeSkipLayout() {
+        const container = document.getElementById('timeSkipContainer');
+        if (!container) return;
+        if (window.innerWidth < 768) {
+            // Chế độ dọc: 2 hàng đối lập
+            container.classList.remove('flex', 'space-x-2', 'justify-center');
+            container.classList.add('grid', 'grid-cols-4', 'gap-2', 'mb-6');
+            // Đảo hàng thứ 2
+            const buttons = Array.from(container.querySelectorAll('.time-skip-btn'));
+            if (buttons.length === 8) {
+                // -10s, -5s, -3s, -1s | +1s, +3s, +5s, +10s
+                // Đảm bảo thứ tự đối lập
+                container.innerHTML = '';
+                // Hàng 1
+                for (let i = 0; i < 4; i++) {
+                    container.appendChild(buttons[i]);
+                }
+                // Hàng 2 (đối lập)
+                for (let i = 7; i >= 4; i--) {
+                    container.appendChild(buttons[i]);
+                }
+            }
+        } else {
+            // Chế độ ngang: 1 hàng
+            container.classList.remove('grid', 'grid-cols-4', 'gap-2');
+            container.classList.add('flex', 'space-x-2', 'justify-center', 'mb-6');
+            // Đảm bảo thứ tự gốc
+            const buttons = Array.from(container.querySelectorAll('.time-skip-btn'));
+            if (buttons.length === 8) {
+                container.innerHTML = '';
+                for (let i = 0; i < 8; i++) {
+                    container.appendChild(buttons[i]);
+                }
+            }
+        }
+    }
+    window.addEventListener('resize', handleTimeSkipLayout);
+    window.addEventListener('DOMContentLoaded', handleTimeSkipLayout);
+    </script>
 </body>
 </html>
