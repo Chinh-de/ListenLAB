@@ -267,6 +267,9 @@ function renderFolderTree() {
             const index = parseInt(element.dataset.index);
             const selectedFile = audioFiles[index];
             
+            // Add selection animation
+            animateFileSelection(element);
+            
             // Update current folder files and load track
             updateCurrentFolderFiles(selectedFile);
             const folderIndex = currentFolderFiles.findIndex(file => file.path === selectedFile.path);
@@ -385,40 +388,84 @@ function updateCurrentFolderFiles(selectedTrack) {
 function togglePlayPause() {
     if (audioFiles.length === 0) return;
     
+    const playerContainer = document.querySelector('.player-container');
+    
     if (isPlaying) {
         audioPlayer.pause();
         isPlaying = false;
         playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        
+        // Remove playing effects
+        playPauseBtn.classList.remove('playing');
+        document.querySelector('.album-art').classList.remove('playing');
+        document.querySelector('.progress-bar').classList.remove('playing');
+        playerContainer.classList.remove('playing');
+        
     } else {
         audioPlayer.play();
         isPlaying = true;
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        
+        // Add playing effects
+        playPauseBtn.classList.add('playing');
+        document.querySelector('.album-art').classList.add('playing');
+        document.querySelector('.progress-bar').classList.add('playing');
+        playerContainer.classList.add('playing');
+        
+        // Add particles to album art
+        addMusicParticles();
     }
 }
 
 // Play previous track
 function playPrevious() {
+    const wasPlaying = isPlaying;
+    
     if (currentTrackIndex > 0) {
         loadTrack(currentTrackIndex - 1);
     } else {
         // Loop to last track in folder
         loadTrack(currentFolderFiles.length - 1);
     }
-    if (isPlaying) {
+    
+    if (wasPlaying) {
         audioPlayer.play();
+        // Maintain playing effects
+        setTimeout(() => {
+            if (isPlaying) {
+                playPauseBtn.classList.add('playing');
+                document.querySelector('.album-art').classList.add('playing');
+                document.querySelector('.progress-bar').classList.add('playing');
+                document.querySelector('.player-container').classList.add('playing');
+                addMusicParticles();
+            }
+        }, 100);
     }
 }
 
 // Play next track
 function playNext() {
+    const wasPlaying = isPlaying;
+    
     if (currentTrackIndex < currentFolderFiles.length - 1) {
         loadTrack(currentTrackIndex + 1);
     } else {
         // Loop to first track in folder
         loadTrack(0);
     }
-    if (isPlaying) {
+    
+    if (wasPlaying) {
         audioPlayer.play();
+        // Maintain playing effects
+        setTimeout(() => {
+            if (isPlaying) {
+                playPauseBtn.classList.add('playing');
+                document.querySelector('.album-art').classList.add('playing');
+                document.querySelector('.progress-bar').classList.add('playing');
+                document.querySelector('.player-container').classList.add('playing');
+                addMusicParticles();
+            }
+        }, 100);
     }
 }
 
@@ -526,6 +573,11 @@ function updateProgress() {
         const current = formatTime(audioPlayer.currentTime);
         const duration = formatTime(audioPlayer.duration);
         currentTimeElement.textContent = `${current} / ${duration}`;
+        
+        // Add visual feedback to progress
+        if (isPlaying && progress > 0) {
+            progressBar.classList.add('playing');
+        }
     }
 }
 
@@ -545,6 +597,12 @@ function updateVolume() {
     const volume = volumeSlider.value / 100;
     audioPlayer.volume = volume;
     volumeSlider.style.setProperty('--volume', `${volumeSlider.value}%`);
+    
+    // Add visual feedback
+    volumeSlider.classList.add('active');
+    setTimeout(() => {
+        volumeSlider.classList.remove('active');
+    }, 500);
 }
 
 // Adjust volume
@@ -574,3 +632,211 @@ function naturalSort(a, b) {
 
 // Initialize volume
 updateVolume();
+
+// ===== EFFECTS FUNCTIONS =====
+
+// Add music particles to album art
+function addMusicParticles() {
+    const albumArt = document.querySelector('.album-art');
+    
+    // Remove existing particles
+    albumArt.querySelectorAll('.particle').forEach(p => p.remove());
+    
+    // Add new particles
+    for (let i = 0; i < 4; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        albumArt.appendChild(particle);
+    }
+}
+
+// Add ripple effect to buttons
+function addRippleEffect() {
+    const buttons = document.querySelectorAll('.player-control, .time-skip-btn, .speed-btn');
+    
+    buttons.forEach(button => {
+        button.classList.add('ripple');
+        
+        button.addEventListener('click', function(e) {
+            // Create ripple element
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple-effect');
+            
+            this.appendChild(ripple);
+            
+            // Remove ripple after animation
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+}
+
+// Enhanced track loading with animations
+function loadTrackWithEffects(index) {
+    // Add loading state
+    const albumArt = document.querySelector('.album-art');
+    albumArt.classList.add('loading-audio');
+    
+    // Original load track logic here
+    loadTrack(index);
+    
+    // Remove loading state after a delay
+    setTimeout(() => {
+        albumArt.classList.remove('loading-audio');
+    }, 1000);
+}
+
+// Enhance button interactions
+function enhanceButtonInteractions() {
+    // Time skip buttons
+    document.querySelectorAll('.time-skip-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.style.transform = 'scale(1.15)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+    
+    // Speed buttons
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all speed buttons
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+    
+    // Volume slider
+    volumeSlider.addEventListener('input', function() {
+        this.classList.add('active');
+        clearTimeout(this.volumeTimeout);
+        this.volumeTimeout = setTimeout(() => {
+            this.classList.remove('active');
+        }, 500);
+    });
+}
+
+// Enhanced file selection animation
+function animateFileSelection(element) {
+    // Remove active class from all audio files
+    document.querySelectorAll('.audio-file').forEach(file => {
+        file.classList.remove('active');
+    });
+    
+    // Add active class to selected file
+    element.classList.add('active');
+    
+    // Scroll to selected file if needed
+    element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'nearest' 
+    });
+}
+
+// Background pulse effect based on audio
+function addAudioVisualization() {
+    if (!audioPlayer.src) return;
+    
+    const albumArt = document.querySelector('.album-art');
+    const playerContainer = document.querySelector('.player-container');
+    
+    // Simple visualization based on current time
+    const updateVisualization = () => {
+        if (isPlaying && audioPlayer.currentTime) {
+            const intensity = Math.sin(audioPlayer.currentTime * 2) * 0.1 + 0.9;
+            albumArt.style.transform = `scale(${intensity})`;
+            
+            // Update background opacity based on audio
+            const opacity = Math.sin(audioPlayer.currentTime) * 0.1 + 0.9;
+            playerContainer.style.setProperty('--audio-intensity', opacity);
+        }
+    };
+    
+    // Update visualization every frame when playing
+    if (isPlaying) {
+        requestAnimationFrame(updateVisualization);
+    }
+}
+
+// Initialize all effects
+function initializeEffects() {
+    addRippleEffect();
+    enhanceButtonInteractions();
+    
+    // Add audio visualization update to the timeupdate event
+    audioPlayer.addEventListener('timeupdate', addAudioVisualization);
+    
+    // Add effect when track loads
+    audioPlayer.addEventListener('loadstart', () => {
+        document.querySelector('.album-art').classList.add('loading-audio');
+    });
+    
+    audioPlayer.addEventListener('canplay', () => {
+        document.querySelector('.album-art').classList.remove('loading-audio');
+    });
+    
+    // Enhance modal animations
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.animation = 'modalFadeOut 0.3s ease forwards';
+                setTimeout(() => {
+                    this.classList.add('hidden');
+                    this.style.animation = '';
+                }, 300);
+            }
+        });
+    });
+}
+
+// Call initialize effects when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initializeEffects, 100);
+});
+
+// CSS for ripple effect (injected dynamically)
+const rippleStyles = `
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+        backdrop-filter: blur(10px);
+    }
+    to {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+}
+`;
+
+// Inject ripple styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = rippleStyles;
+document.head.appendChild(styleSheet);
